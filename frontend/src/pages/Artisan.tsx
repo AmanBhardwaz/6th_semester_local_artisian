@@ -5,8 +5,8 @@ import { createProduct } from "../services/product.service";
 import axios from "axios";
 import { CATEGORIES, CATEGORY_NAMES } from "../constants/categories";
 
-const API = "http://localhost:5000/api/products";
-const ORDERS_API = "http://localhost:5000/api/orders";
+const API = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/products`;
+const ORDERS_API = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/orders`;
 
 export default function Artisan() {
     const { token } = useAuth();

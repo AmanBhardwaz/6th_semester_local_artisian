@@ -27,7 +27,7 @@ export default function ArtisanOrders() {
 
     const fetchOrders = () => {
         const token = localStorage.getItem("token");
-        axios.get("http://localhost:5000/api/orders/artisan", {
+        axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/orders/artisan`, {
             headers: { Authorization: `Bearer ${token}` }
         })
             .then(res => setOrders(res.data))
@@ -39,7 +39,7 @@ export default function ArtisanOrders() {
         setUpdating(orderId);
         const token = localStorage.getItem("token");
         try {
-            await axios.put(`http://localhost:5000/api/orders/${orderId}/status`,
+            await axios.put(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/orders/${orderId}/status`,
                 { status: newStatus },
                 { headers: { Authorization: `Bearer ${token}` } }
             );

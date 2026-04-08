@@ -17,7 +17,7 @@ export default function ConsumerOrders() {
 
     useEffect(() => {
         const token = localStorage.getItem("token");
-        axios.get("http://localhost:5000/api/orders/my", {
+        axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/orders/my`, {
             headers: { Authorization: `Bearer ${token}` }
         })
             .then(res => setOrders(res.data))

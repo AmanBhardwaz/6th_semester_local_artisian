@@ -5,7 +5,7 @@ import DashboardLayout from "../../components/DashboardLayout";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const API = "http://localhost:5000/api/orders";
+const API = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/orders`;
 
 export default function Cart() {
     const { cartItems, removeFromCart, updateQuantity, cartTotal, clearCart } = useCart();
