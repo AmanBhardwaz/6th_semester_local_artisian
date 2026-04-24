@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -6,124 +7,155 @@ interface DashboardLayoutProps {
     title: string;
 }
 
+const menuItems = {
+    admin: [
+        { icon: "📊", label: "Overview",    path: "/admin" },
+        { icon: "👥", label: "Users",       path: "/admin/users" },
+        { icon: "⚙️", label: "Settings",    path: "/admin/settings" },
+    ],
+    artisan: [
+        { icon: "🏠", label: "Dashboard",   path: "/artisan" },
+        { icon: "🛍️", label: "My Products", path: "/artisan/products" },
+        { icon: "📦", label: "Orders",      path: "/artisan/orders" },
+        { icon: "👤", label: "My Profile",  path: "/profile" },
+    ],
+    consumer: [
+        { icon: "🏠", label: "Dashboard",   path: "/consumer" },
+        { icon: "🛒", label: "Marketplace", path: "/consumer/shop" },
+        { icon: "🛍️", label: "My Cart",     path: "/consumer/cart" },
+        { icon: "📦", label: "My Orders",   path: "/consumer/orders" },
+        { icon: "👤", label: "My Profile",  path: "/profile" },
+    ],
+};
+
+// Icons for bottom mobile tab bar (consumer only — most used)
+const mobileTabs = {
+    consumer: [
+        { icon: "🏠", label: "Home",      path: "/consumer" },
+        { icon: "🛒", label: "Shop",      path: "/consumer/shop" },
+        { icon: "🛍️", label: "Cart",      path: "/consumer/cart" },
+        { icon: "📦", label: "Orders",    path: "/consumer/orders" },
+        { icon: "👤", label: "Profile",   path: "/profile" },
+    ],
+    artisan: [
+        { icon: "🏠", label: "Home",     path: "/artisan" },
+        { icon: "🛍️", label: "Products", path: "/artisan/products" },
+        { icon: "📦", label: "Orders",   path: "/artisan/orders" },
+        { icon: "👤", label: "Profile",  path: "/profile" },
+    ],
+    admin: [
+        { icon: "📊", label: "Overview", path: "/admin" },
+        { icon: "👥", label: "Users",    path: "/admin/users" },
+    ],
+};
+
 export default function DashboardLayout({ children, title }: DashboardLayoutProps) {
     const { role, logout } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     const handleLogout = () => {
         logout();
         navigate("/");
     };
 
-    const menuItems = {
-        admin: [
-            { label: "Overview", path: "/admin" },
-            { label: "Users", path: "/admin/users" },
-            { label: "Settings", path: "/admin/settings" },
-        ],
-        artisan: [
-            { label: "Dashboard", path: "/artisan" },
-            { label: "My Products", path: "/artisan/products" },
-            { label: "Orders", path: "/artisan/orders" },
-            { label: "👤 My Profile", path: "/profile" },
-        ],
-        consumer: [
-            { label: "Dashboard", path: "/consumer" },
-            { label: "Marketplace", path: "/consumer/shop" },
-            { label: "🛒 My Cart", path: "/consumer/cart" },
-            { label: "My Orders", path: "/consumer/orders" },
-            { label: "👤 My Profile", path: "/profile" },
-        ]
-    };
-
     const currentMenu = role ? menuItems[role as keyof typeof menuItems] || [] : [];
+    const currentMobileTabs = role ? mobileTabs[role as keyof typeof mobileTabs] || [] : [];
+    const roleLabel = role?.charAt(0).toUpperCase() ?? "U";
 
     return (
-        <div style={{ display: "flex", minHeight: "100vh", backgroundColor: "#f4f6f8", fontFamily: "'Segoe UI', sans-serif" }}>
+        <div className="dash-shell">
 
-            {/* Sidebar */}
-            <div style={{
-                width: "250px",
-                backgroundColor: "#2c3e50",
-                color: "white",
-                display: "flex",
-                flexDirection: "column",
-                position: "fixed",
-                height: "100vh",
-                boxShadow: "2px 0 5px rgba(0,0,0,0.1)"
-            }}>
-                <div style={{ padding: "20px", fontSize: "1.5rem", fontWeight: "bold", borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
-                    LOCAL ARTISAN
+            {/* ── Sidebar overlay (mobile tap-to-close) ── */}
+            <div
+                className={`dash-sidebar-overlay${sidebarOpen ? " open" : ""}`}
+                onClick={() => setSidebarOpen(false)}
+            />
+
+            {/* ── Sidebar ── */}
+            <aside className={`dash-sidebar${sidebarOpen ? " open" : ""}`}>
+
+                <div className="dash-sidebar-brand">
+                    <div className="dash-brand-logo">LOCAL ARTISAN</div>
+                    <div className="dash-brand-role">{role} portal</div>
                 </div>
 
-                <nav style={{ flex: 1, padding: "20px 0" }}>
-                    {currentMenu.map((item) => (
+                <nav className="dash-nav">
+                    {currentMenu.map(item => (
                         <Link
                             key={item.path}
                             to={item.path}
-                            style={{
-                                display: "block",
-                                padding: "15px 25px",
-                                color: location.pathname === item.path ? "#fff" : "#bdc3c7",
-                                textDecoration: "none",
-                                backgroundColor: location.pathname === item.path ? "#34495e" : "transparent",
-                                borderLeft: location.pathname === item.path ? "4px solid #3498db" : "4px solid transparent",
-                                transition: "all 0.2s"
-                            }}
+                            className={`dash-nav-item${location.pathname === item.path ? " active" : ""}`}
+                            onClick={() => setSidebarOpen(false)}
                         >
+                            <span className="dash-nav-icon">{item.icon}</span>
                             {item.label}
                         </Link>
                     ))}
                 </nav>
 
-                <div style={{ padding: "20px", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
-                    <div style={{ marginBottom: "10px", fontSize: "0.9rem", color: "#95a5a6" }}>Logged in as {role}</div>
-                    <button
-                        onClick={handleLogout}
-                        style={{
-                            width: "100%",
-                            padding: "10px",
-                            backgroundColor: "#c0392b",
-                            color: "white",
-                            border: "none",
-                            borderRadius: "5px",
-                            cursor: "pointer",
-                            fontWeight: "bold"
-                        }}
-                    >
-                        Logout
+                <div className="dash-sidebar-footer">
+                    <div className="dash-user-info">
+                        <div className="dash-avatar">{roleLabel}</div>
+                        <div>
+                            <div className="dash-user-label">Logged in as</div>
+                            <div className="dash-user-role">{role}</div>
+                        </div>
+                    </div>
+                    <button className="dash-logout-btn" onClick={handleLogout}>
+                        🚪 Logout
                     </button>
                 </div>
-            </div>
+            </aside>
 
-            {/* Main Content */}
-            <div style={{ flex: 1, marginLeft: "250px", display: "flex", flexDirection: "column" }}>
+            {/* ── Main area ── */}
+            <div className="dash-main">
 
-                {/* Header */}
-                <header style={{
-                    height: "70px",
-                    backgroundColor: "white",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "0 40px",
-                    boxShadow: "0 2px 4px rgba(0,0,0,0.05)"
-                }}>
-                    <h2 style={{ margin: 0, color: "#2c3e50" }}>{title}</h2>
-                    <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
-                        <div style={{ width: "40px", height: "40px", borderRadius: "50%", backgroundColor: "#ecf0f1", display: "flex", alignItems: "center", justifyContent: "center", color: "#7f8c8d", fontWeight: "bold" }}>
-                            {role?.charAt(0).toUpperCase()}
+                {/* Sticky top header */}
+                <header className="dash-header">
+                    <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                        {/* Hamburger — visible only on tablet/mobile */}
+                        <button
+                            className="dash-menu-toggle"
+                            onClick={() => setSidebarOpen(true)}
+                            aria-label="Open sidebar"
+                        >
+                            ☰
+                        </button>
+                        <h2 className="dash-header-title">{title}</h2>
+                    </div>
+
+                    <div className="dash-header-right">
+                        <div className="dash-header-avatar" title={role ?? ""}>
+                            {roleLabel}
                         </div>
                     </div>
                 </header>
 
-                {/* Page Content */}
-                <main style={{ padding: "40px", flex: 1 }}>
+                {/* Page content */}
+                <main className="dash-content">
                     {children}
                 </main>
             </div>
 
+            {/* ── Mobile bottom tab bar ── */}
+            {currentMobileTabs.length > 0 && (
+                <nav className="dash-mobile-tabs" aria-label="Mobile navigation">
+                    <div className="dash-mobile-tabs-inner">
+                        {currentMobileTabs.map(tab => (
+                            <Link
+                                key={tab.path}
+                                to={tab.path}
+                                className={`mob-tab${location.pathname === tab.path ? " active" : ""}`}
+                            >
+                                <span className="tab-icon">{tab.icon}</span>
+                                {tab.label}
+                            </Link>
+                        ))}
+                    </div>
+                </nav>
+            )}
         </div>
     );
 }

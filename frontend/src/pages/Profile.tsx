@@ -14,14 +14,13 @@ export default function Profile() {
     const [saving, setSaving] = useState(false);
     const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
 
-    // Form fields
     const [name, setName] = useState("");
     const [phone, setPhone] = useState("");
     const [street, setStreet] = useState("");
     const [city, setCity] = useState("");
     const [state, setState] = useState("");
     const [pincode, setPincode] = useState("");
-    const [photoPreview, setPhotoPreview] = useState<string>("");
+    const [photoPreview, setPhotoPreview] = useState("");
     const [photoFile, setPhotoFile] = useState<File | null>(null);
 
     useEffect(() => {
@@ -43,27 +42,19 @@ export default function Profile() {
 
     const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (file) {
-            setPhotoFile(file);
-            setPhotoPreview(URL.createObjectURL(file));
-        }
+        if (file) { setPhotoFile(file); setPhotoPreview(URL.createObjectURL(file)); }
     };
 
     const handleSave = async () => {
         setSaving(true); setMsg(null);
         try {
-            const formData = new FormData();
-            formData.append("name", name);
-            formData.append("phone", phone);
-            formData.append("street", street);
-            formData.append("city", city);
-            formData.append("state", state);
-            formData.append("pincode", pincode);
-            if (photoFile) formData.append("profilePhoto", photoFile);
+            const fd = new FormData();
+            fd.append("name", name); fd.append("phone", phone);
+            fd.append("street", street); fd.append("city", city);
+            fd.append("state", state); fd.append("pincode", pincode);
+            if (photoFile) fd.append("profilePhoto", photoFile);
 
-            const res = await axios.put(`${API}/profile`, formData, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            const res = await axios.put(`${API}/profile`, fd, { headers: { Authorization: `Bearer ${token}` } });
             setUser(res.data.user);
             setMsg({ text: "✅ Profile updated successfully!", ok: true });
             setPhotoFile(null);
@@ -72,114 +63,98 @@ export default function Profile() {
         } finally { setSaving(false); }
     };
 
-    const inputStyle: React.CSSProperties = {
-        width: "100%", padding: "12px 14px", borderRadius: "8px",
-        border: "1px solid #e2e8f0", fontSize: "0.95rem", boxSizing: "border-box",
-        outline: "none", color: "#2c3e50",
-    };
-    const labelStyle: React.CSSProperties = {
-        display: "block", marginBottom: "6px", color: "#64748b", fontSize: "0.85rem", fontWeight: "600",
-    };
-
     if (loading) return (
         <DashboardLayout title="My Profile">
-            <p style={{ color: "#888" }}>Loading profile...</p>
+            <p style={{ color: "#9ca3af" }}>Loading profile...</p>
         </DashboardLayout>
     );
 
-    const initials = name ? name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2) : "?";
+    const initials = name
+        ? name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2)
+        : "?";
 
     return (
         <DashboardLayout title="My Profile">
-            <div style={{ maxWidth: "720px", margin: "0 auto" }}>
+            <div className="profile-wrap">
 
-                {/* Profile Photo Card */}
-                <div style={{ backgroundColor: "white", borderRadius: "16px", padding: "30px", marginBottom: "20px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", display: "flex", alignItems: "center", gap: "25px" }}>
-                    {/* Avatar */}
-                    <div style={{ position: "relative", flexShrink: 0 }}>
+                {/* ── Avatar Card ── */}
+                <div className="profile-avatar-card">
+                    <div className="profile-avatar-wrap">
                         {photoPreview ? (
-                            <img src={photoPreview} alt="Profile"
-                                style={{ width: "90px", height: "90px", borderRadius: "50%", objectFit: "cover", border: "3px solid #667eea" }} />
+                            <img className="profile-avatar-img" src={photoPreview} alt="Profile" />
                         ) : (
-                            <div style={{ width: "90px", height: "90px", borderRadius: "50%", backgroundColor: "#667eea", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: "1.8rem", fontWeight: "bold", border: "3px solid #667eea" }}>
-                                {initials}
-                            </div>
+                            <div className="profile-avatar-initials">{initials}</div>
                         )}
-                        <button onClick={() => fileRef.current?.click()}
-                            style={{ position: "absolute", bottom: 0, right: 0, width: "28px", height: "28px", borderRadius: "50%", backgroundColor: "#667eea", border: "2px solid white", cursor: "pointer", color: "white", fontSize: "0.75rem", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <button
+                            className="profile-edit-photo-btn"
+                            onClick={() => fileRef.current?.click()}
+                            title="Change photo"
+                        >
                             ✏️
                         </button>
                         <input ref={fileRef} type="file" accept="image/*" onChange={handlePhotoChange} style={{ display: "none" }} />
                     </div>
 
                     <div>
-                        <h2 style={{ margin: "0 0 4px 0", color: "#2c3e50", fontSize: "1.3rem" }}>{user?.name || "Your Name"}</h2>
-                        <p style={{ margin: "0 0 6px 0", color: "#888", fontSize: "0.9rem" }}>{user?.email}</p>
-                        <span style={{ backgroundColor: "#f0eeff", color: "#667eea", padding: "3px 12px", borderRadius: "12px", fontSize: "0.8rem", fontWeight: "600", textTransform: "capitalize" }}>
-                            {user?.role}
-                        </span>
-                        <p style={{ margin: "8px 0 0 0", color: "#bbb", fontSize: "0.8rem" }}>
+                        <h2 className="profile-meta-name">{user?.name || "Your Name"}</h2>
+                        <p className="profile-meta-email">{user?.email}</p>
+                        <span className="profile-role-badge">{user?.role}</span>
+                        <p className="profile-member-since">
                             Member since {new Date(user?.createdAt).toLocaleDateString("en-IN", { month: "long", year: "numeric" })}
                         </p>
                     </div>
                 </div>
 
-                {/* Edit Form */}
-                <div style={{ backgroundColor: "white", borderRadius: "16px", padding: "30px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-                    <h3 style={{ margin: "0 0 25px 0", color: "#2c3e50", fontSize: "1.1rem", borderBottom: "1px solid #f0f0f0", paddingBottom: "15px" }}>
-                        Personal Information
-                    </h3>
+                {/* ── Edit Form ── */}
+                <div className="profile-form-card">
+                    <h3 className="profile-section-title">Personal Information</h3>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "20px" }}>
+                    <div className="profile-grid-2">
                         <div>
-                            <label style={labelStyle}>Full Name</label>
-                            <input value={name} onChange={e => setName(e.target.value)} style={inputStyle} placeholder="Your name" />
+                            <label className="profile-label">Full Name</label>
+                            <input className="profile-input" value={name} onChange={e => setName(e.target.value)} placeholder="Your name" />
                         </div>
                         <div>
-                            <label style={labelStyle}>Phone Number</label>
-                            <input value={phone} onChange={e => setPhone(e.target.value)} style={inputStyle} placeholder="+91 XXXXXXXXXX" />
+                            <label className="profile-label">Phone Number</label>
+                            <input className="profile-input" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+91 XXXXXXXXXX" />
                         </div>
                     </div>
 
-                    <div>
-                        <label style={labelStyle}>Email Address</label>
-                        <input value={user?.email || ""} disabled
-                            style={{ ...inputStyle, backgroundColor: "#f9fafb", color: "#9ca3af", cursor: "not-allowed" }} />
-                        <p style={{ margin: "4px 0 20px 0", color: "#aaa", fontSize: "0.78rem" }}>Email cannot be changed</p>
+                    <div className="profile-field">
+                        <label className="profile-label">Email Address</label>
+                        <input className="profile-input" value={user?.email || ""} disabled />
+                        <p className="profile-hint">Email cannot be changed</p>
                     </div>
 
-                    <h3 style={{ margin: "0 0 20px 0", color: "#2c3e50", fontSize: "1.1rem", borderBottom: "1px solid #f0f0f0", paddingBottom: "15px" }}>
-                        Delivery Address
-                    </h3>
+                    <h3 className="profile-section-title" style={{ marginTop: "8px" }}>Delivery Address</h3>
 
-                    <div style={{ marginBottom: "20px" }}>
-                        <label style={labelStyle}>Street / House No.</label>
-                        <input value={street} onChange={e => setStreet(e.target.value)} style={inputStyle} placeholder="e.g. 12, MG Road, Sector 4" />
+                    <div className="profile-field">
+                        <label className="profile-label">Street / House No.</label>
+                        <input className="profile-input" value={street} onChange={e => setStreet(e.target.value)} placeholder="e.g. 12, MG Road, Sector 4" />
                     </div>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "15px", marginBottom: "25px" }}>
+                    <div className="profile-grid-3">
                         <div>
-                            <label style={labelStyle}>City</label>
-                            <input value={city} onChange={e => setCity(e.target.value)} style={inputStyle} placeholder="e.g. Mumbai" />
+                            <label className="profile-label">City</label>
+                            <input className="profile-input" value={city} onChange={e => setCity(e.target.value)} placeholder="e.g. Mumbai" />
                         </div>
                         <div>
-                            <label style={labelStyle}>State</label>
-                            <input value={state} onChange={e => setState(e.target.value)} style={inputStyle} placeholder="e.g. Maharashtra" />
+                            <label className="profile-label">State</label>
+                            <input className="profile-input" value={state} onChange={e => setState(e.target.value)} placeholder="e.g. Maharashtra" />
                         </div>
                         <div>
-                            <label style={labelStyle}>Pincode</label>
-                            <input value={pincode} onChange={e => setPincode(e.target.value)} style={inputStyle} placeholder="e.g. 400001" maxLength={6} />
+                            <label className="profile-label">Pincode</label>
+                            <input className="profile-input" value={pincode} onChange={e => setPincode(e.target.value)} placeholder="e.g. 400001" maxLength={6} />
                         </div>
                     </div>
 
                     {msg && (
-                        <div style={{ padding: "12px 16px", borderRadius: "8px", marginBottom: "20px", backgroundColor: msg.ok ? "#f0fdf4" : "#fef2f2", color: msg.ok ? "#16a34a" : "#dc2626", fontWeight: "600", fontSize: "0.9rem" }}>
+                        <div className={`profile-msg ${msg.ok ? "ok" : "err"}`}>
                             {msg.text}
                         </div>
                     )}
 
-                    <button onClick={handleSave} disabled={saving}
-                        style={{ padding: "14px 35px", backgroundColor: saving ? "#aaa" : "#667eea", color: "white", border: "none", borderRadius: "10px", fontWeight: "bold", fontSize: "1rem", cursor: saving ? "not-allowed" : "pointer" }}>
+                    <button className="profile-save-btn" onClick={handleSave} disabled={saving}>
                         {saving ? "Saving..." : "💾 Save Changes"}
                     </button>
                 </div>

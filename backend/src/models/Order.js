@@ -13,8 +13,10 @@ const orderSchema = new mongoose.Schema({
     consumer: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     items: [orderItemSchema],
     totalAmount: { type: Number, required: true },
-    paymentMethod: { type: String, default: "UPI" },
-    paymentStatus: { type: String, default: "paid" },  // simulated — always paid
+    paymentMethod: { type: String, default: "Razorpay" },
+    paymentStatus: { type: String, default: "pending" }, // becomes "paid" after Razorpay verification
+    razorpayOrderId: { type: String, default: "" },       // Razorpay order ID (order_xxx)
+    razorpayPaymentId: { type: String, default: "" },     // Razorpay payment ID (pay_xxx)
     status: {
         type: String,
         enum: ["placed", "processing", "shipped", "delivered"],
@@ -24,3 +26,4 @@ const orderSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model("Order", orderSchema);
+

@@ -3,11 +3,13 @@ import axios from "axios";
 import DashboardLayout from "../../components/DashboardLayout";
 import { useNavigate } from "react-router-dom";
 
-const statusColors: Record<string, string> = {
-    placed: "#f39c12",
-    processing: "#3498db",
-    shipped: "#9b59b6",
-    delivered: "#2ecc71",
+const STEPS = ["placed", "processing", "shipped", "delivered"] as const;
+
+const statusColors: Record<string, { bg: string; text: string }> = {
+    placed:     { bg: "rgba(243,156,18,0.12)",  text: "#f39c12" },
+    processing: { bg: "rgba(52,152,219,0.12)",  text: "#3498db" },
+    shipped:    { bg: "rgba(155,89,182,0.12)",  text: "#9b59b6" },
+    delivered:  { bg: "rgba(46,204,113,0.12)",  text: "#2ecc71" },
 };
 
 export default function ConsumerOrders() {
@@ -17,86 +19,101 @@ export default function ConsumerOrders() {
 
     useEffect(() => {
         const token = localStorage.getItem("token");
-        axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/orders/my`, {
-            headers: { Authorization: `Bearer ${token}` }
-        })
+        axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/orders/my`,
+            { headers: { Authorization: `Bearer ${token}` } })
             .then(res => setOrders(res.data))
             .catch(err => console.error(err))
             .finally(() => setLoading(false));
     }, []);
 
-    if (loading) return <DashboardLayout title="My Orders"><p style={{ color: "#888" }}>Loading orders...</p></DashboardLayout>;
+    if (loading) return (
+        <DashboardLayout title="My Orders">
+            <p style={{ color: "#9ca3af" }}>Loading orders...</p>
+        </DashboardLayout>
+    );
 
-    if (orders.length === 0) {
-        return (
-            <DashboardLayout title="My Orders">
-                <div style={{ textAlign: "center", padding: "80px", color: "#aaa" }}>
-                    <div style={{ fontSize: "4rem" }}>📦</div>
-                    <h3>No orders yet</h3>
-                    <button onClick={() => navigate("/consumer/shop")}
-                        style={{ padding: "12px 30px", backgroundColor: "#667eea", color: "white", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" }}>
-                        Shop Now
-                    </button>
-                </div>
-            </DashboardLayout>
-        );
-    }
+    if (orders.length === 0) return (
+        <DashboardLayout title="My Orders">
+            <div className="orders-empty">
+                <div className="orders-empty-icon">📦</div>
+                <h3>No orders yet</h3>
+                <button className="btn-primary" onClick={() => navigate("/consumer/shop")}
+                    style={{ fontSize: "0.9rem", padding: "12px 28px" }}>
+                    Shop Now
+                </button>
+            </div>
+        </DashboardLayout>
+    );
 
     return (
         <DashboardLayout title="My Orders">
-            {orders.map((order: any) => (
-                <div key={order._id} style={{ backgroundColor: "white", borderRadius: "12px", padding: "25px", marginBottom: "20px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-                    {/* Order Header */}
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
-                        <div>
-                            <p style={{ margin: "0 0 4px 0", color: "#888", fontSize: "0.85rem" }}>Order ID: {order._id}</p>
-                            <p style={{ margin: 0, color: "#888", fontSize: "0.85rem" }}>
-                                {new Date(order.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}
-                            </p>
-                        </div>
-                        <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                            <span style={{ padding: "5px 15px", borderRadius: "20px", backgroundColor: statusColors[order.status] + "22", color: statusColors[order.status], fontWeight: "bold", fontSize: "0.85rem", textTransform: "capitalize" }}>
-                                {order.status}
-                            </span>
-                            <span style={{ fontWeight: "bold", color: "#667eea", fontSize: "1.1rem" }}>₹ {order.totalAmount.toFixed(2)}</span>
-                        </div>
-                    </div>
+            {orders.map((order: any) => {
+                const statusIdx = STEPS.indexOf(order.status);
+                const colors = statusColors[order.status] || statusColors.placed;
 
-                    {/* Order Items */}
-                    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                        {order.items.map((item: any, idx: number) => (
-                            <div key={idx} style={{ display: "flex", gap: "15px", alignItems: "center", padding: "12px", backgroundColor: "#f9f9f9", borderRadius: "8px" }}>
-                                <img src={item.image} alt={item.title}
-                                    style={{ width: "60px", height: "60px", objectFit: "cover", borderRadius: "6px" }}
-                                    onError={(e) => { (e.target as HTMLImageElement).src = "https://via.placeholder.com/60?text=?"; }} />
-                                <div style={{ flex: 1 }}>
-                                    <p style={{ margin: "0 0 4px 0", fontWeight: "bold", color: "#2c3e50" }}>{item.title}</p>
-                                    <p style={{ margin: 0, color: "#888", fontSize: "0.85rem" }}>Qty: {item.quantity} × ₹{item.price}</p>
-                                </div>
-                                <p style={{ margin: 0, fontWeight: "bold", color: "#2c3e50" }}>₹ {(item.price * item.quantity).toFixed(2)}</p>
+                return (
+                    <div key={order._id} className="order-card">
+
+                        {/* ── Order Header ── */}
+                        <div className="order-header">
+                            <div className="order-meta">
+                                <p className="order-id">#{order._id}</p>
+                                <p>
+                                    {new Date(order.createdAt).toLocaleDateString("en-IN", {
+                                        day: "numeric", month: "long", year: "numeric"
+                                    })}
+                                </p>
                             </div>
-                        ))}
-                    </div>
+                            <div className="order-header-right">
+                                <span
+                                    className="order-status-badge"
+                                    style={{ backgroundColor: colors.bg, color: colors.text }}
+                                >
+                                    {order.status}
+                                </span>
+                                <span className="order-total">₹{order.totalAmount.toFixed(2)}</span>
+                            </div>
+                        </div>
 
-                    {/* Progress Tracker */}
-                    <div style={{ marginTop: "20px", display: "flex", alignItems: "center" }}>
-                        {["placed", "processing", "shipped", "delivered"].map((step, idx, arr) => {
-                            const stepIdx = ["placed", "processing", "shipped", "delivered"].indexOf(order.status);
-                            const currentIdx = idx;
-                            const done = currentIdx <= stepIdx;
-                            return (
-                                <div key={step} style={{ display: "flex", alignItems: "center", flex: idx < arr.length - 1 ? 1 : 0 }}>
-                                    <div style={{ width: "28px", height: "28px", borderRadius: "50%", backgroundColor: done ? "#667eea" : "#eee", display: "flex", alignItems: "center", justifyContent: "center", color: done ? "white" : "#aaa", fontSize: "0.75rem", fontWeight: "bold", flexShrink: 0 }}>
-                                        {done ? "✓" : idx + 1}
+                        {/* ── Order Items ── */}
+                        <div className="order-items">
+                            {order.items.map((item: any, idx: number) => (
+                                <div key={idx} className="order-item">
+                                    <img className="order-item-img" src={item.image} alt={item.title}
+                                        onError={(e) => { (e.target as HTMLImageElement).src = "https://via.placeholder.com/58?text=?"; }} />
+                                    <div className="order-item-info">
+                                        <p className="order-item-title">{item.title}</p>
+                                        <p className="order-item-qty">Qty: {item.quantity} × ₹{item.price}</p>
                                     </div>
-                                    <p style={{ margin: "0 0 0 6px", fontSize: "0.75rem", color: done ? "#667eea" : "#aaa", whiteSpace: "nowrap", flexShrink: 0 }}>{step.charAt(0).toUpperCase() + step.slice(1)}</p>
-                                    {idx < arr.length - 1 && <div style={{ flex: 1, height: "2px", backgroundColor: done ? "#667eea" : "#eee", margin: "0 8px" }} />}
+                                    <span className="order-item-subtotal">
+                                        ₹{(item.price * item.quantity).toFixed(2)}
+                                    </span>
                                 </div>
-                            );
-                        })}
+                            ))}
+                        </div>
+
+                        {/* ── Progress Tracker ── */}
+                        <div className="order-tracker">
+                            {STEPS.map((step, idx) => {
+                                const done = idx <= statusIdx;
+                                return (
+                                    <div key={step} className="order-tracker-step">
+                                        <div className={`tracker-dot ${done ? "done" : "pending"}`}>
+                                            {done ? "✓" : idx + 1}
+                                        </div>
+                                        <span className={`tracker-label ${done ? "done" : "pending"}`}>
+                                            {step.charAt(0).toUpperCase() + step.slice(1)}
+                                        </span>
+                                        {idx < STEPS.length - 1 && (
+                                            <div className={`tracker-line ${done && idx < statusIdx ? "done" : "pending"}`} />
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
                     </div>
-                </div>
-            ))}
+                );
+            })}
         </DashboardLayout>
     );
 }
