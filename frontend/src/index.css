@@ -1249,3 +1249,96 @@ button {
 @media (max-width: 420px) {
   .profile-grid-3 { grid-template-columns: 1fr; }
 }
+/* admin panel styles appended */
+
+/* -----------------------------------------------------------
+   ADMIN PANEL
+   ----------------------------------------------------------- */
+
+.admin-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 18px; margin-bottom: 28px;
+}
+.admin-stat-card {
+  background: white; border-radius: 16px; padding: 22px 20px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  border-left: 4px solid #7c3aed; transition: transform 0.2s;
+}
+.admin-stat-card:hover { transform: translateY(-3px); }
+.admin-stat-card.blue   { border-left-color: #3b82f6; }
+.admin-stat-card.green  { border-left-color: #10b981; }
+.admin-stat-card.purple { border-left-color: #7c3aed; }
+.admin-stat-card.orange { border-left-color: #f59e0b; }
+.admin-stat-card.red    { border-left-color: #ef4444; }
+.admin-stat-label { font-size: 0.78rem; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 8px; }
+.admin-stat-value { font-size: 2rem; font-weight: 800; color: #1a1f3c; margin: 0 0 4px; }
+.admin-stat-sub   { font-size: 0.75rem; color: #9ca3af; margin: 0; }
+
+.admin-section { background: white; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 28px; overflow: hidden; }
+.admin-section-header { display: flex; justify-content: space-between; align-items: center; padding: 18px 22px; border-bottom: 1px solid #f3f4f6; flex-wrap: wrap; gap: 10px; }
+.admin-section-title { margin: 0; font-size: 1rem; font-weight: 700; color: #1a1f3c; }
+.admin-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.admin-tab { padding: 6px 14px; border-radius: 8px; border: 1.5px solid #e2e8f0; background: white; font-size: 0.8rem; font-weight: 600; color: #6b7280; cursor: pointer; transition: all 0.15s; }
+.admin-tab:hover  { border-color: #7c3aed; color: #7c3aed; }
+.admin-tab.active { background: #7c3aed; color: white; border-color: #7c3aed; }
+
+.admin-table-wrap { overflow-x: auto; }
+.admin-table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+.admin-table th { padding: 12px 18px; background: #f8f9fb; color: #6b7280; font-weight: 700; text-align: left; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+.admin-table td { padding: 14px 18px; border-bottom: 1px solid #f3f4f6; color: #374151; vertical-align: middle; }
+.admin-table tr:last-child td { border-bottom: none; }
+.admin-table tr:hover td { background: #fafaff; }
+
+.badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.73rem; font-weight: 700; text-transform: capitalize; white-space: nowrap; }
+.badge-pending    { background: #fef3c7; color: #b45309; }
+.badge-approved   { background: #d1fae5; color: #065f46; }
+.badge-rejected   { background: #fee2e2; color: #991b1b; }
+.badge-consumer   { background: #eff6ff; color: #1d4ed8; }
+.badge-artisan    { background: #f5f3ff; color: #6d28d9; }
+.badge-admin      { background: #fff7ed; color: #c2410c; }
+.badge-banned     { background: #fee2e2; color: #991b1b; }
+.badge-placed     { background: #fef3c7; color: #b45309; }
+.badge-processing { background: #dbeafe; color: #1d4ed8; }
+.badge-shipped    { background: #f3e8ff; color: #7c3aed; }
+.badge-delivered  { background: #d1fae5; color: #065f46; }
+
+.admin-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.btn-approve { padding: 6px 14px; border-radius: 7px; border: none; background: #d1fae5; color: #065f46; font-weight: 700; font-size: 0.78rem; cursor: pointer; transition: background 0.15s; }
+.btn-approve:hover { background: #6ee7b7; }
+.btn-reject  { padding: 6px 14px; border-radius: 7px; border: none; background: #fee2e2; color: #991b1b; font-weight: 700; font-size: 0.78rem; cursor: pointer; transition: background 0.15s; }
+.btn-reject:hover  { background: #fca5a5; }
+.btn-ban     { padding: 6px 14px; border-radius: 7px; border: none; background: #fee2e2; color: #991b1b; font-weight: 700; font-size: 0.78rem; cursor: pointer; transition: background 0.15s; }
+.btn-ban:hover     { background: #fca5a5; }
+.btn-unban   { padding: 6px 14px; border-radius: 7px; border: none; background: #d1fae5; color: #065f46; font-weight: 700; font-size: 0.78rem; cursor: pointer; transition: background 0.15s; }
+.btn-unban:hover   { background: #6ee7b7; }
+
+.approval-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 18px; padding: 20px; }
+.approval-card { border: 1.5px solid #f0f0f0; border-radius: 14px; overflow: hidden; transition: box-shadow 0.2s; }
+.approval-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.10); }
+.approval-card-img { width: 100%; height: 155px; object-fit: cover; background: #f3f4f6; display: block; }
+.approval-card-body { padding: 14px; }
+.approval-card-title   { margin: 0 0 4px; font-size: 0.9rem; font-weight: 700; color: #1a1f3c; }
+.approval-card-artisan { margin: 0 0 4px; font-size: 0.75rem; color: #9ca3af; }
+.approval-card-price   { font-weight: 800; color: #7c3aed; font-size: 0.92rem; margin: 0 0 12px; }
+.approval-card-actions { display: flex; gap: 8px; }
+.approval-card-actions button { flex: 1; padding: 8px; font-size: 0.8rem; border-radius: 8px; }
+
+.admin-chart-wrap { padding: 16px 20px 20px; }
+.admin-empty { text-align: center; padding: 50px 20px; color: #9ca3af; }
+.admin-empty-icon { font-size: 3rem; margin-bottom: 12px; }
+
+@media (max-width: 900px) {
+  .admin-stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .approval-grid    { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  .admin-stats-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .admin-stat-value { font-size: 1.5rem; }
+  .admin-section-header { padding: 14px 16px; }
+  .admin-table th, .admin-table td { padding: 10px 12px; font-size: 0.78rem; }
+  .approval-grid { grid-template-columns: 1fr; padding: 14px; }
+}
+@media (max-width: 420px) {
+  .admin-stats-grid { grid-template-columns: 1fr; }
+}

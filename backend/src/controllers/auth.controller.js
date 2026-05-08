@@ -39,16 +39,14 @@ exports.login = async (req, res) => {
   const user = await User.findOne({ email });
   if (!user) return res.status(404).json({ message: "User not found" });
 
+  if (user.isBanned)
+    return res.status(403).json({ message: "Your account has been banned. Contact support." });
+
   if (!user.password)
-    return res.status(400).json({
-      message: "Login with Google"
-    });
+    return res.status(400).json({ message: "Login with Google" });
 
   const match = await bcrypt.compare(password, user.password);
   if (!match) return res.status(401).json({ message: "Wrong password" });
 
-  res.json({
-    token: generateToken(user),
-    role: user.role
-  });
+  res.json({ token: generateToken(user), role: user.role });
 };

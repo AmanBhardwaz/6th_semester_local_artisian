@@ -9,9 +9,10 @@ interface DashboardLayoutProps {
 
 const menuItems = {
     admin: [
-        { icon: "📊", label: "Overview",    path: "/admin" },
-        { icon: "👥", label: "Users",       path: "/admin/users" },
-        { icon: "⚙️", label: "Settings",    path: "/admin/settings" },
+        { icon: "📊", label: "Overview",          path: "/admin" },
+        { icon: "🛍️", label: "Product Approval",  path: "/admin/products" },
+        { icon: "👥", label: "User Management",   path: "/admin/users" },
+        { icon: "📦", label: "All Orders",         path: "/admin/orders" },
     ],
     artisan: [
         { icon: "🏠", label: "Dashboard",   path: "/artisan" },

@@ -1,73 +1,115 @@
+import { useEffect, useState } from "react";
+import axios from "axios";
 import DashboardLayout from "../components/DashboardLayout";
+import {
+    AreaChart, Area, XAxis, YAxis, CartesianGrid,
+    Tooltip, ResponsiveContainer
+} from "recharts";
+
+const API = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/admin`;
+const authHeader = () => ({ Authorization: `Bearer ${localStorage.getItem("token")}` });
 
 export default function Admin() {
-    const stats = [
-        { label: "Total Users", value: "1,240", color: "#3498db" },
-        { label: "Active Sellers", value: "85", color: "#2ecc71" },
-        { label: "Total Revenue", value: "$45.2k", color: "#9b59b6" },
-    ];
+    const [stats, setStats] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
 
-    const recentUsers = [
-        { id: 1, name: "Alice Johnson", role: "Consumer", date: "2023-10-25", status: "Active" },
-        { id: 2, name: "Bob Smith", role: "Artisan", date: "2023-10-24", status: "Pending" },
-        { id: 3, name: "Charlie Brown", role: "Consumer", date: "2023-10-24", status: "Active" },
-        { id: 4, name: "Diana Prince", role: "Artisan", date: "2023-10-23", status: "Active" },
+    useEffect(() => {
+        axios.get(`${API}/stats`, { headers: authHeader() })
+            .then(r => setStats(r.data))
+            .catch(console.error)
+            .finally(() => setLoading(false));
+    }, []);
+
+    if (loading) return (
+        <DashboardLayout title="Admin Overview">
+            <p style={{ color: "#9ca3af" }}>Loading dashboard...</p>
+        </DashboardLayout>
+    );
+
+    const cards = [
+        { label: "Total Users",       value: stats.totalUsers,     sub: `${stats.totalArtisans} artisans · ${stats.totalConsumers} consumers`, color: "blue" },
+        { label: "Total Revenue",     value: `₹${stats.totalRevenue.toLocaleString("en-IN")}`, sub: "All paid orders", color: "green" },
+        { label: "Total Orders",      value: stats.totalOrders,    sub: "Across all users",   color: "purple" },
+        { label: "Live Products",     value: stats.totalProducts,  sub: "Approved & visible",  color: "orange" },
+        { label: "Pending Approval",  value: stats.pendingProducts,sub: "Awaiting review",     color: "red" },
     ];
 
     return (
         <DashboardLayout title="Admin Overview">
 
-            {/* Stats Grid */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "20px", marginBottom: "40px" }}>
-                {stats.map((stat) => (
-                    <div key={stat.label} style={{ backgroundColor: "white", padding: "20px", borderRadius: "10px", boxShadow: "0 2px 10px rgba(0,0,0,0.05)", borderLeft: `5px solid ${stat.color}` }}>
-                        <h3 style={{ margin: "0 0 10px 0", color: "#7f8c8d", fontSize: "1rem" }}>{stat.label}</h3>
-                        <p style={{ margin: 0, fontSize: "2rem", fontWeight: "bold", color: "#2c3e50" }}>{stat.value}</p>
+            {/* ── Stat Cards ── */}
+            <div className="admin-stats-grid">
+                {cards.map(c => (
+                    <div key={c.label} className={`admin-stat-card ${c.color}`}>
+                        <p className="admin-stat-label">{c.label}</p>
+                        <p className="admin-stat-value">{c.value}</p>
+                        <p className="admin-stat-sub">{c.sub}</p>
                     </div>
                 ))}
             </div>
 
-            {/* Recent Activity Table */}
-            <div style={{ backgroundColor: "white", borderRadius: "10px", boxShadow: "0 2px 10px rgba(0,0,0,0.05)", overflow: "hidden" }}>
-                <div style={{ padding: "20px", borderBottom: "1px solid #ecf0f1" }}>
-                    <h3 style={{ margin: 0, color: "#2c3e50" }}>Recent Registrations</h3>
+            {/* ── Revenue Chart ── */}
+            <div className="admin-section">
+                <div className="admin-section-header">
+                    <h3 className="admin-section-title">📈 Revenue — Last 6 Months</h3>
                 </div>
-                <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                    <thead>
-                        <tr style={{ backgroundColor: "#f8f9fa", textAlign: "left" }}>
-                            <th style={{ padding: "15px 20px", color: "#7f8c8d", fontWeight: "600" }}>Name</th>
-                            <th style={{ padding: "15px 20px", color: "#7f8c8d", fontWeight: "600" }}>Role</th>
-                            <th style={{ padding: "15px 20px", color: "#7f8c8d", fontWeight: "600" }}>Date</th>
-                            <th style={{ padding: "15px 20px", color: "#7f8c8d", fontWeight: "600" }}>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {recentUsers.map((user) => (
-                            <tr key={user.id} style={{ borderBottom: "1px solid #ecf0f1" }}>
-                                <td style={{ padding: "15px 20px", color: "#2c3e50" }}>{user.name}</td>
-                                <td style={{ padding: "15px 20px" }}>
-                                    <span style={{
-                                        padding: "5px 10px",
-                                        borderRadius: "15px",
-                                        fontSize: "0.8rem",
-                                        backgroundColor: user.role === "Artisan" ? "#e8f6f3" : "#eaf2f8",
-                                        color: user.role === "Artisan" ? "#2ecc71" : "#3498db"
-                                    }}>
-                                        {user.role}
-                                    </span>
-                                </td>
-                                <td style={{ padding: "15px 20px", color: "#7f8c8d" }}>{user.date}</td>
-                                <td style={{ padding: "15px 20px" }}>
-                                    <span style={{ color: user.status === "Active" ? "#2ecc71" : "#f1c40f", fontWeight: "600" }}>
-                                        {user.status}
-                                    </span>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                <div className="admin-chart-wrap">
+                    <ResponsiveContainer width="100%" height={240}>
+                        <AreaChart data={stats.revenueByMonth}>
+                            <defs>
+                                <linearGradient id="rev" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%"  stopColor="#7c3aed" stopOpacity={0.18} />
+                                    <stop offset="95%" stopColor="#7c3aed" stopOpacity={0} />
+                                </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                            <XAxis dataKey="month" tick={{ fontSize: 12, fill: "#9ca3af" }} />
+                            <YAxis tick={{ fontSize: 12, fill: "#9ca3af" }}
+                                   tickFormatter={v => `₹${v.toLocaleString("en-IN")}`} />
+                            <Tooltip formatter={(v) => [`₹${Number(v ?? 0).toLocaleString("en-IN")}`, "Revenue"]} />
+                            <Area type="monotone" dataKey="revenue" stroke="#7c3aed"
+                                  strokeWidth={2.5} fill="url(#rev)" dot={{ r: 4, fill: "#7c3aed" }} />
+                        </AreaChart>
+                    </ResponsiveContainer>
+                </div>
             </div>
 
+            {/* ── Recent Orders ── */}
+            <div className="admin-section">
+                <div className="admin-section-header">
+                    <h3 className="admin-section-title">🕐 Recent Orders</h3>
+                </div>
+                <div className="admin-table-wrap">
+                    <table className="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {stats.recentOrders.map((o: any) => (
+                                <tr key={o._id}>
+                                    <td style={{ fontFamily: "monospace", fontSize: "0.75rem", color: "#6b7280" }}>
+                                        #{o._id.slice(-8)}
+                                    </td>
+                                    <td>{o.consumer?.name || "—"}</td>
+                                    <td style={{ fontWeight: 700, color: "#7c3aed" }}>
+                                        ₹{o.totalAmount?.toLocaleString("en-IN")}
+                                    </td>
+                                    <td><span className={`badge badge-${o.status}`}>{o.status}</span></td>
+                                    <td style={{ color: "#9ca3af", fontSize: "0.8rem" }}>
+                                        {new Date(o.createdAt).toLocaleDateString("en-IN")}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </DashboardLayout>
     );
 }

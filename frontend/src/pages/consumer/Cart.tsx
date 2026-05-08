@@ -19,12 +19,43 @@ function loadRazorpayScript(): Promise<boolean> {
     });
 }
 
+type PaymentMethod = "razorpay" | "cod";
+
 export default function Cart() {
     const { cartItems, removeFromCart, updateQuantity, cartTotal, clearCart } = useCart();
     const navigate = useNavigate();
     const [paying, setPaying] = useState(false);
+    const [payMethod, setPayMethod] = useState<PaymentMethod>("razorpay");
 
-    const handleCheckout = async () => {
+    // ── COD Handler ──────────────────────────────────────────
+    const handleCOD = async () => {
+        if (cartItems.length === 0) return;
+        if (!confirm("Confirm Cash on Delivery order?")) return;
+        setPaying(true);
+        try {
+            const token = localStorage.getItem("token");
+            await axios.post(`${API}/place`, {
+                items: cartItems.map(item => ({
+                    product:  item._id,
+                    title:    item.title,
+                    image:    item.image,
+                    price:    item.price,
+                    quantity: item.quantity,
+                })),
+                totalAmount:   cartTotal,
+                paymentMethod: "COD",
+            }, { headers: { Authorization: `Bearer ${token}` } });
+
+            clearCart();
+            navigate("/consumer/orders");
+        } catch (err: any) {
+            alert(err?.response?.data?.message || "Could not place order. Try again.");
+            setPaying(false);
+        }
+    };
+
+    // ── Razorpay Handler ─────────────────────────────────────
+    const handleRazorpay = async () => {
         if (cartItems.length === 0) return;
         setPaying(true);
         try {
@@ -42,10 +73,11 @@ export default function Cart() {
                 order_id: data.orderId,
                 handler: async (response: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string; }) => {
                     try {
+                        const token = localStorage.getItem("token");
                         await axios.post(`${API}/verify-payment`, {
-                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_order_id:  response.razorpay_order_id,
                             razorpay_payment_id: response.razorpay_payment_id,
-                            razorpay_signature: response.razorpay_signature,
+                            razorpay_signature:  response.razorpay_signature,
                             items: cartItems.map(item => ({ product: item._id, title: item.title, image: item.image, price: item.price, quantity: item.quantity })),
                             totalAmount: cartTotal,
                         }, { headers: { Authorization: `Bearer ${token}` } });
@@ -69,6 +101,8 @@ export default function Cart() {
             setPaying(false);
         }
     };
+
+    const handleCheckout = () => payMethod === "cod" ? handleCOD() : handleRazorpay();
 
     // ── Empty cart ──
     if (cartItems.length === 0) {
@@ -136,16 +170,65 @@ export default function Cart() {
                             <span className="cart-total-amount">₹{cartTotal.toFixed(2)}</span>
                         </div>
 
-                        <button className="cart-pay-btn" onClick={handleCheckout} disabled={paying}>
+                        {/* ── Payment Method Selector ── */}
+                        <p style={{ margin: "0 0 10px", fontSize: "0.82rem", fontWeight: 700, color: "#6b7280" }}>
+                            Select Payment Method
+                        </p>
+
+                        <div style={{ display: "flex", gap: "8px", marginBottom: "14px" }}>
+                            {/* Razorpay option */}
+                            <label style={{
+                                flex: 1, display: "flex", flexDirection: "column", alignItems: "center",
+                                gap: "4px", padding: "10px 8px", borderRadius: "10px", cursor: "pointer",
+                                border: `2px solid ${payMethod === "razorpay" ? "#7c3aed" : "#e2e8f0"}`,
+                                background: payMethod === "razorpay" ? "#f5f3ff" : "white",
+                                transition: "all 0.15s",
+                            }}>
+                                <input type="radio" name="paymethod" value="razorpay"
+                                    checked={payMethod === "razorpay"}
+                                    onChange={() => setPayMethod("razorpay")}
+                                    style={{ display: "none" }} />
+                                <span style={{ fontSize: "1.3rem" }}>💳</span>
+                                <span style={{ fontSize: "0.72rem", fontWeight: 700, color: payMethod === "razorpay" ? "#7c3aed" : "#6b7280" }}>
+                                    Online Pay
+                                </span>
+                            </label>
+
+                            {/* COD option */}
+                            <label style={{
+                                flex: 1, display: "flex", flexDirection: "column", alignItems: "center",
+                                gap: "4px", padding: "10px 8px", borderRadius: "10px", cursor: "pointer",
+                                border: `2px solid ${payMethod === "cod" ? "#10b981" : "#e2e8f0"}`,
+                                background: payMethod === "cod" ? "#f0fdf4" : "white",
+                                transition: "all 0.15s",
+                            }}>
+                                <input type="radio" name="paymethod" value="cod"
+                                    checked={payMethod === "cod"}
+                                    onChange={() => setPayMethod("cod")}
+                                    style={{ display: "none" }} />
+                                <span style={{ fontSize: "1.3rem" }}>💵</span>
+                                <span style={{ fontSize: "0.72rem", fontWeight: 700, color: payMethod === "cod" ? "#065f46" : "#6b7280" }}>
+                                    Cash on Delivery
+                                </span>
+                            </label>
+                        </div>
+
+                        {/* ── Checkout Button ── */}
+                        <button className="cart-pay-btn" onClick={handleCheckout} disabled={paying}
+                            style={payMethod === "cod" ? { background: "linear-gradient(135deg, #10b981, #065f46)" } : {}}>
                             {paying ? (
-                                <><span className="cart-pay-spinner" /> Opening Razorpay...</>
+                                <><span className="cart-pay-spinner" /> {payMethod === "cod" ? "Placing Order..." : "Opening Razorpay..."}</>
+                            ) : payMethod === "cod" ? (
+                                <>💵 Place Order · ₹{cartTotal.toFixed(2)} COD</>
                             ) : (
                                 <>💳 Pay ₹{cartTotal.toFixed(2)} with Razorpay</>
                             )}
                         </button>
 
                         <div className="cart-trust-badge">
-                            🔒 Secured by <strong>Razorpay</strong> · UPI · Cards · Net Banking · Wallets
+                            {payMethod === "cod"
+                                ? "🏠 Pay when your order arrives at doorstep"
+                                : "🔒 Secured by Razorpay · UPI · Cards · Net Banking"}
                         </div>
 
                         <button className="cart-clear-btn" onClick={clearCart}>🗑️ Clear Cart</button>

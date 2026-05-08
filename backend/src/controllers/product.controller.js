@@ -15,9 +15,10 @@ exports.createProduct = async (req, res) => {
       description,
       price,
       image: imageUrl,
-      category: category || "",
+      category:    category    || "",
       subCategory: subCategory || "",
       artisan: req.user.id,
+      status: "pending",   // awaits admin approval
     });
 
     res.json(product);
@@ -42,7 +43,7 @@ exports.getMyProducts = async (req, res) => {
 
 exports.getAllProducts = async (req, res) => {
   try {
-    const products = await Product.find()
+    const products = await Product.find({ status: "approved" })
       .populate("artisan", "name");
     res.json(products);
   } catch (err) {
