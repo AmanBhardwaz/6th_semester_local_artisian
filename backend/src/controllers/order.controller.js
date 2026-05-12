@@ -1,9 +1,10 @@
-const Order = require("../models/Order");
-const Product = require("../models/Product");
-const User = require("../models/User");
+const Order     = require("../models/Order");
+const Product   = require("../models/Product");
+const User      = require("../models/User");
 const { sendOrderConfirmation } = require("../utils/emailService");
-const Razorpay = require("razorpay");
-const crypto = require("crypto");
+const { invalidateCache }       = require("../services/recommendation.service");
+const Razorpay  = require("razorpay");
+const crypto    = require("crypto");
 
 // Initialize Razorpay instance
 const razorpay = new Razorpay({
@@ -92,6 +93,9 @@ exports.verifyPayment = async (req, res) => {
         } catch (mailErr) {
             console.error("Email send failed:", mailErr.message);
         }
+
+        // Invalidate recommendation cache — buying activity changed
+        invalidateCache();
 
         res.status(201).json({ message: "Payment verified & order placed!", order });
     } catch (err) {

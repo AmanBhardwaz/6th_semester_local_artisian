@@ -1,0 +1,383 @@
+# 🎓 Local Artisan — Semester Project PPT Content
+
+---
+
+## SLIDE 1 — Title Slide
+
+**Title:** Local Artisan — Handmade Marketplace Platform
+
+**Subtitle:** Connecting Traditional Artisans with Modern Consumers
+
+**Your Name / Roll No / Branch**
+**Subject:** [Your Subject Name]
+**Date:** May 2026
+
+---
+
+## SLIDE 2 — Problem Statement
+
+### Problem
+
+- India mein lakho traditional artisans hain jo **locally bechtey hain**
+- Unki reach sirf **local market tak** limited hai
+- Koi **digital presence** nahi — middlemen unka profit kha jaate hain
+- Consumers ko **authentic handmade products** dhundhna mushkil hai
+
+### Solution
+
+> **Local Artisan** — Ek complete e-commerce platform jo artisans ko directly consumers se connect karta hai
+
+---
+
+## SLIDE 3 — Project Overview
+
+| Feature | Description |
+|---|---|
+| 🏪 **Marketplace** | Consumers browse & buy handmade products |
+| 🎨 **Artisan Dashboard** | Sellers manage products & orders |
+| 👑 **Admin Panel** | Full platform control & moderation |
+| 💳 **Payment Gateway** | Razorpay + Cash on Delivery |
+| 🤖 **AI Recommendations** | 70:30 Algorithm — Smart product suggestions |
+| 🔒 **Security** | JWT Auth + Rate Limiting + HMAC Verification |
+
+---
+
+## SLIDE 4 — Tech Stack
+
+### Frontend
+- **React.js** (TypeScript) — UI Framework
+- **Vite** — Fast build tool
+- **React Router** — Page navigation
+- **Axios** — API calls
+- **Recharts** — Analytics graphs
+- **Vanilla CSS** — Custom responsive design
+
+### Backend
+- **Node.js + Express.js** — REST API server
+- **MongoDB + Mongoose** — Database
+- **JWT** — Authentication tokens
+- **Bcrypt** — Password hashing
+- **Cloudinary** — Image storage
+- **Nodemailer** — Email notifications
+
+### Payments & Tools
+- **Razorpay SDK** — Online payment gateway
+- **HMAC-SHA256** — Payment signature verification
+- **node-cache** — In-memory caching
+- **express-rate-limit** — DDoS protection
+
+### Deployment
+- **Frontend** → Vercel
+- **Backend** → Render
+- **Database** → MongoDB Atlas (Cloud)
+
+---
+
+## SLIDE 5 — System Architecture
+
+```
+User (Browser)
+      │
+      ▼
+┌──────────────┐        ┌─────────────────┐
+│   Vercel     │        │  Render Server  │
+│  (React App) │◄──────►│  (Node/Express) │
+└──────────────┘  HTTPS └────────┬────────┘
+                                 │
+                    ┌────────────┼────────────┐
+                    ▼            ▼            ▼
+             MongoDB Atlas   Cloudinary   Razorpay
+             (Database)      (Images)    (Payments)
+```
+
+**3 User Roles:**
+- 👤 **Consumer** — Browse, Buy, Track orders
+- 🎨 **Artisan** — Upload products, Manage orders
+- 👑 **Admin** — Full platform control
+
+---
+
+## SLIDE 6 — Key Features (Consumer Side)
+
+### 🛒 Marketplace
+- Category + Sub-category filters
+- Price range filter
+- Search by product, artisan name, category
+- Sort by newest / price
+
+### 🤖 AI Recommendation System
+- **"Recommended for You"** section on homepage
+- 🔥 Trending badge — products selling well
+- ✨ New badge — recently added products
+- Star ratings displayed on cards
+
+### 💳 Checkout
+- **Razorpay** — UPI, Cards, Net Banking, Wallets
+- **Cash on Delivery** — Pay at doorstep
+- Email confirmation after every order
+
+### 📦 Order Tracking
+- Real-time status: Placed → Processing → Shipped → Delivered
+- Visual progress tracker
+
+---
+
+## SLIDE 7 — Key Features (Artisan Side)
+
+### 📤 Product Management
+- Upload product with image (Cloudinary storage)
+- Set title, description, price, category
+
+### ✅ Approval System
+- Uploaded products go to **"Pending"** status
+- Admin approves → product goes live
+- Status visible to artisan: ⏳ Pending / ✅ Live / ❌ Rejected
+
+### 📊 Dashboard Stats
+- Total products, Total sales, Pending orders
+
+### 🚚 Order Management
+- View all orders containing their products
+- Update order status
+
+---
+
+## SLIDE 8 — Admin Panel (Most Powerful Feature)
+
+### 📊 Overview Dashboard
+- Real stats from MongoDB (not fake data)
+- 6-month Revenue Graph (Recharts)
+- Recent orders table
+
+### 🛍️ Product Moderation
+- See all **Pending** products
+- **Approve** → product goes live for consumers
+- **Reject** → rejection reason sent to artisan
+
+### 👥 User Management
+- View all consumers & artisans
+- **Ban** abusive users — they cannot login
+- **Unban** to restore access
+
+### 📦 All Orders
+- Filter by status (Placed/Processing/Shipped/Delivered)
+- Revenue summary per filter
+
+---
+
+## SLIDE 9 — Security Features
+
+### 1. JWT Authentication
+```
+Login → Server issues Token (7 days valid)
+Every API request → Token verify hota hai
+Invalid token → 401 Unauthorized
+```
+
+### 2. Razorpay HMAC-SHA256 Verification
+```
+Payment complete → Razorpay sends signature
+Backend → signature verify karta hai
+✅ Valid → Order DB mein save hota hai
+❌ Invalid → Order reject — no fraud possible
+```
+
+### 3. Rate Limiting (DDoS Protection)
+| Route | Limit |
+|---|---|
+| Login / Signup | 10 req / 15 min |
+| Payment | 5 req / 10 min |
+| General API | 100 req / 15 min |
+| Product Browse | 200 req / 15 min |
+
+### 4. Admin-Only Routes
+- `adminOnly` middleware — non-admins get 403 Forbidden
+- Banned users blocked at login level
+
+---
+
+## SLIDE 10 — AI Recommendation System (70:30 Algorithm)
+
+### Formula
+```
+Final Score = 0.70 × Popularity Score
+            + 0.30 × Discovery Score
+```
+
+### Popularity Score (70%) — Jo bik raha hai
+| Factor | Weight |
+|---|---|
+| Orders in last 30 days | 40% |
+| Average review rating | 25% |
+| Unique buyers count | 20% |
+| Revenue generated | 15% |
+
+### Discovery Score (30%) — Jo nayi / unsold hai
+| Factor | Weight |
+|---|---|
+| Days since last order (inverted) | 40% |
+| Price vs category average | 30% |
+| Profile completeness | 20% |
+| Artisan join recency | 10% |
+
+### Why 70:30?
+- **70% popular** → User ko quality products mile → Trust bane
+- **30% discovery** → New artisans ko exposure mile → Platform grow kare
+
+### Caching
+- Results **RAM mein 30 minutes** ke liye cache hote hain
+- Order place hone pe cache automatically delete hota hai
+- Performance: 99% requests bina DB query ke serve hoti hain
+
+---
+
+## SLIDE 11 — Database Design
+
+### Collections (MongoDB)
+
+**Users**
+```
+name, email, password(hashed), role, 
+profilePhoto, address, isBanned, googleId
+```
+
+**Products**
+```
+title, description, price, image(Cloudinary URL),
+category, subCategory, artisan(ref), 
+status: pending/approved/rejected, adminNote
+```
+
+**Orders**
+```
+consumer(ref), items[], totalAmount,
+paymentMethod: Razorpay/COD,
+paymentStatus: paid/pending,
+status: placed/processing/shipped/delivered,
+razorpayOrderId, razorpayPaymentId
+```
+
+**Reviews**
+```
+product(ref), consumer(ref), rating(1-5), comment
+```
+
+---
+
+## SLIDE 12 — Deployment Architecture
+
+```
+Code push to GitHub
+        │
+        ▼
+┌──────────────┐    ┌──────────────────────┐
+│   Vercel     │    │      Render          │
+│  Auto-deploy │    │   Auto-deploy        │
+│  React App   │    │   Node.js Backend    │
+│  (Free tier) │    │   (Free tier)        │
+└──────────────┘    └──────────────────────┘
+        │                      │
+        └──────────┬───────────┘
+                   ▼
+         HTTPS Secured Communication
+                   │
+              MongoDB Atlas
+              (Cloud DB - Free 512MB)
+```
+
+**Environment Variables** (secure):
+- MongoDB URI, JWT Secret
+- Cloudinary Keys
+- Razorpay Key ID + Secret
+- Mail credentials
+
+---
+
+## SLIDE 13 — Challenges Faced & Solutions
+
+| Challenge | Solution |
+|---|---|
+| Express route order bug (`/my` caught by `/:id`) | Specific routes pehle define kiye |
+| Razorpay payment fraud prevention | HMAC-SHA256 server-side verification |
+| Existing products no status field | `$or` query with `$exists` check |
+| Heavy recommendation DB queries | node-cache with 30 min TTL |
+| Mobile responsiveness | CSS media queries, bottom tab bar |
+| DDoS protection | express-rate-limit with tiered limits |
+
+---
+
+## SLIDE 14 — Project Statistics
+
+| Metric | Count |
+|---|---|
+| Total Pages/Screens | 15+ |
+| API Endpoints | 30+ |
+| Database Collections | 4 |
+| Middleware layers | 5 |
+| Security checks per request | 3 |
+| Lines of Code (approx) | 5000+ |
+| Deployment platforms | 3 (Vercel, Render, Atlas) |
+
+---
+
+## SLIDE 15 — Live Demo Flow
+
+> **Demo sequence (for presentation):**
+
+1. **Home page** → Responsive design dikhao
+2. **Signup** as Artisan → Product upload karo
+3. **Login** as Admin → Product approve karo
+4. **Login** as Consumer → Product marketplace dikhao
+5. **Recommendation section** → AI picks dikhao
+6. **Add to Cart** → Both payment options dikhao
+7. **Admin Dashboard** → Revenue chart + Stats
+8. **User Ban** → Artisan logout → Login try karo (blocked)
+
+---
+
+## SLIDE 16 — Future Scope
+
+- 🤖 **Better ML** — User purchase history based recommendations
+- 📱 **Mobile App** — React Native version
+- 💬 **Chat System** — Consumer ↔ Artisan direct messaging
+- 🌐 **Multi-language** — Hindi, regional languages support
+- 🚚 **Delivery Tracking** — Real-time GPS tracking integration
+- 📊 **Artisan Analytics** — Detailed sales graphs for sellers
+- 🏆 **Loyalty Points** — Reward system for repeat buyers
+
+---
+
+## SLIDE 17 — Conclusion
+
+### What was built:
+✅ Full-stack production-ready e-commerce platform  
+✅ Real payment gateway integration (not simulated)  
+✅ AI-powered recommendation system  
+✅ Role-based access control (3 roles)  
+✅ DDoS protection & security  
+✅ Deployed & live on cloud  
+
+### Impact:
+> Yeh platform traditional artisans ko **digital economy** mein lane ka ek practical solution hai — bina middlemen ke, seedha consumer tak.
+
+---
+
+## SLIDE 18 — Thank You
+
+**"Local Artisan — Empowering Craftsmen, One Sale at a Time"**
+
+🌐 Live: [your-vercel-url.vercel.app]  
+💻 GitHub: [your-github-repo]
+
+**Questions?** 🙋
+
+---
+
+> 💡 **PPT Tips:**
+> - Slides 1-3: 2 min (intro)
+> - Slides 4-5: 2 min (tech)
+> - Slides 6-10: 5 min (features — most important)
+> - Slides 11-12: 2 min (DB + deployment)
+> - Slides 13-15: 3 min (challenges + demo)
+> - Slides 16-17: 1 min (future + conclusion)
+> - **Total: ~15 minutes**
